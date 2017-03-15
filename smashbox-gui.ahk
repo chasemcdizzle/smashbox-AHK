@@ -3,6 +3,137 @@
 #include <CvJoyInterface>
 SetBatchLines, -1
 
+
+;Some variables we will be using later on
+; Stick variables
+l := false
+r := false
+u := false
+d := false
+
+x1 := 0
+x2 := 0
+y1 := 0
+y2 := 0
+
+
+;Project M analog values
+v1xPM := 9088
+v2xPM := 5120
+v3xPM := 3712
+
+v1yPM := 9088
+v2yPM := 5120
+v3yPM := 3712
+
+v1yhighPM := 9216
+v2yhighPM := 5248
+v3yhighPM := 3712
+
+xlowstartPM := 3456
+xhighstartPM := 29376
+
+ylowstartPM := 3328
+yhighstartPM := 29312
+
+
+;Placeholders for whatever set of analog we will use
+v1x := 0
+v2x := 0
+v3x := 0
+
+v1y := 0
+v2y := 0
+v3y := 0
+
+v1yhigh := 0
+v2yhigh := 0
+v3yhigh := 0
+
+xlowstart := 0
+xhighstart := 0
+
+ylowstart := 0
+yhighstart := 0
+
+
+;Melee analog values. center is 16385
+v1xmelee := 7678
+v2xmelee := 4096
+v3xmelee := 1792
+
+v1ymelee := 7550
+v2ymelee := 4224
+v3ymelee := 1536
+
+v1yhighmelee := 7678
+v2yhighmelee := 4352
+v3yhighmelee := 3712
+
+xlowstartmelee := 5248
+xhighstartmelee := 27584
+
+ylowstartmelee := 5248
+yhighstartmelee := 27392
+
+
+;Some functions we will be using later on
+;Set Analog values to Project M values
+SetAnalogToProjectM(){
+  ;MsgBox, SetAnalogToProjectM()
+  global
+  v1x := v1xPM
+  v2x := v2xPM
+  v3x := v3xPM
+
+  v1y := v1yPM
+  v2y := v2yPM
+  v3y := v3yPM
+
+  v1yhigh := v1yhighPM
+  v2yhigh := v2yhighPM
+  v3yhigh := v3yhighPM
+
+  xlowstart := xlowstartPM
+  xhighstart := xhighstartPM
+
+  ylowstart := ylowstartPM
+  yhighstart := yhighstartPM
+}
+
+;Set Analog values to Melee values
+SetAnalogToMelee(){
+  global
+  ;MsgBox, SetAnalogToMelee()
+  v1x := v1xmelee
+  v2x := v2xmelee
+  v3x := v3xmelee
+
+  v1y := v1ymelee
+  v2y := v2ymelee
+  v3y := v3ymelee
+
+  v1yhigh := v1yhighmelee
+  v2yhigh := v2yhighmelee
+  v3yhigh := v3yhighmelee
+
+  xlowstart := xlowstartmelee
+  xhighstart := xhighstartmelee
+
+  ylowstart := ylowstartmelee
+  yhighstart := yhighstartmelee
+}
+
+SavePrefAsMelee(){
+  IniWrite, Melee, Hotkeys.ini, GamePreference, pref
+  ;IniRead, gamePref, Hotkeys.ini, GamePreference, pref, None
+}
+
+SavePrefAsProjectM(){
+  IniWrite, ProjectM, Hotkeys.ini, GamePreference, pref
+}
+
+;Initialize GUI Elements
 hotkeyLabels := Object()
 hotkeyLabels.Insert("Analog Up")
 hotkeyLabels.Insert("Analog Left")
@@ -35,7 +166,28 @@ Menu, Tray, Click, 1
 Menu, Tray, Add, Edit Controls, ShowGui
 Menu, Tray, Default, Edit Controls
 
-#ctrls = 25  ;Total number of Key's we will be binding (excluding UP's)?
+#ctrls = 25  ;Total number of Keys we will be binding (excluding UP's)?
+
+IniRead, gamePref, Hotkeys.ini, GamePreference, pref, None
+;MsgBox, The value is %gamePref%
+;Initializes the GUI with PM selected if that is what Hotkeys.ini has saved
+if(InStr(gamePref, "ProjectM", false)){
+  ;Alert User that script has started
+  TrayTip, Smashbox, Script Started In ProjectM Mode, 3, 0
+
+  Gui, Add, Text,, Choose the game you will be playing:
+  Gui, Add, Radio, vMelee gGamePref, Melee
+  Gui, Add, Radio, x+5 vProjectM Checked gGamePref, ProjectM
+  SetAnalogToProjectM()
+}
+;Initializes the GUI with melee by default
+else{
+  TrayTip, Smashbox, Script Started In Melee Mode, 3, 0
+  SetAnalogToMelee()
+  Gui, Add, Text,, Choose the game you will be playing:
+  Gui, Add, Radio, vMelee Checked gGamePref, Melee
+  Gui, Add, Radio, x+5 vProjectM gGamePref, ProjectM
+}
 
 for index, element in hotkeyLabels{
  Gui, Add, Text, xm vLB%index%, %element% Hotkey:
@@ -59,6 +211,7 @@ for index, element in hotkeyLabels{
   Gui, Add, CheckBox, x+5 vCB%index% Checked gGuiLabel, Prevent Default Behavior  ;Add checkboxes to allow the Windows key (#) as a modifier..
 }                                                               ;Check the box if Win modifier is used.
 
+;-------End Initialize Gui Elements--------
 
 ;----------Start Hotkey Handling-----------
 
@@ -74,20 +227,9 @@ if (!vJoyInterface.vJoyEnabled()){
 
 myStick := vJoyInterface.Devices[1]
 
-;Alert User that script has started
-TrayTip, Smashbox, Script Started, 3, 0
 
-; Stick variables
-l := false
-r := false
-u := false
-d := false
-
-x1 := 0
-x2 := 0
-y1 := 0
-y2 := 0
-
+;Placeholder analog values
+/*
 v1x := 9088
 v2x := 5120
 v3x := 3712
@@ -105,6 +247,8 @@ xhighstart := 29376
 
 ylowstart := 3328
 yhighstart := 29312
+*/
+
 
 ; Gives stick input based on stick variables
 
@@ -175,23 +319,37 @@ validateHK(GuiControl) {
    HK%num% := "~" HK%num%                   ;    This prevents any key from being blocked.
   checkDuplicateHK(num)
  }
- If (savedHK%num% || HK%num%)               ;Unless both are empty,
+ If (savedHK%num% || HKd%num%)               ;Unless both are empty,
   setHK(num, savedHK%num%, HK%num%)         ;  update INI/GUI
 }
 
 checkDuplicateHK(num) {
  global #ctrls
- Loop,% #ctrls
-  If (HK%num% = savedHK%A_Index%) {
-   dup := A_Index
-   TrayTip, Smashbox, Hotkey Already Taken, 3, 0
-   Loop,6 {
-    GuiControl,% "Disable" b:=!b, HK%dup%   ;Flash the original hotkey to alert the user.
-    Sleep,200
-   }
-   GuiControl,,HK%num%,% HK%num% :=""       ;Delete the hotkey and clear the control.
-   break
+ tmpHK := HK%num%
+ Loop,% #ctrls{
+  ;We count ~W and W as the same hotkey, so when we compare, lets append a ~ to all hotkeys for this comparison
+  ;This if statement allows people to toggle the prevent default without it losing its mind
+  If(num != A_Index){
+    ;TrayTip, Smashbox, bool is  %myBool% num is %num% and a_index is %A_Index%, 3, 0
+    If(!InStr(tmpHK, "~", false))
+      tmpHK := "~" tmpHK
+    ;Same as above
+    tmpSavedHK := savedHK%A_Index%
+    If(!InStr(tmpSavedHK, "~", false))
+      tmpSavedHK := "~" tmpSavedHK
+    If (tmpHK = tmpSavedHK) {
+     dup := A_Index
+     TrayTip, Smashbox, Hotkey Already Taken, 3, 0
+     ;TrayTip, Smashbox, tmpHK  is %num% and tmpSavedHK is saved, 3, 0
+     Loop,6 {
+      GuiControl,% "Disable" b:=!b, HK%dup%   ;Flash the original hotkey to alert the user.
+      Sleep,200
+     }
+     GuiControl,,HK%num%,% HK%num% :=""       ;Delete the hotkey and clear the control.
+     break
+    }
   }
+ }
 }
 
 setHK(num,INI,GUI) {
@@ -244,7 +402,22 @@ HotkeyCtrlHasFocus() {
 }
 
 
+
+
 ;----------------------------Labels
+
+;Update Game preference
+GamePref:
+  ;MsgBox, gamepref control is %A_GuiControl%
+  if (InStr(A_GuiControl,"Melee")){
+    SetAnalogToMelee()
+    SavePrefAsMelee()
+  }
+  else{
+    SetAnalogToProjectM()
+    SavePrefAsProjectM()
+  }
+  return
 
 ;Show GUI from tray Icon
 ShowGui:
