@@ -10,7 +10,7 @@ I have no relation with Hitbox, I do like their products though and plan on buyi
 
 # Requirments
 1. Windows. Autohotkey only works on windows. This script was tested on widows 10.
-2. Ishurka v 4.3. Otherwise known as faster melee. Other dolphin versions might work, but I tested with dolphin version 5 and the control stick values work slightly differently. https://www.smashladder.com/download/dolphin/fm
+2. Dolphin 5.0-321 for Project M, Ishurka Dolphin Otherwise known as Faster Melee for Melee.
 3. A keyboard with high n-key rollover. This is how many keys can be pressed at the same time without errors. Most gaming and mechanical keyboards will allow at least 6 keys which should be enough for every advanced technique.
 4. Autohotkey. This is a scripting language for remapping keyboard keys. Download the installer here: https://autohotkey.com/
 5. Vjoy: a joystick emulator. Download and install here: https://sourceforge.net/projects/vjoystick/?source=typ_redirect
